@@ -42,7 +42,7 @@ pub fn rstrip(
 
 pub fn roll_slice1<T>(
     v: &mut [T],
-    shift: &i8,
+    shift: &i32,
 )
 {    
     let shift_usize = (*shift)
@@ -59,7 +59,7 @@ pub fn roll_slice1<T>(
 
 pub fn g_roll_slice1<'a, T>(
     v: &'a mut [T],
-    shift: &i8,
+    shift: &i32,
 ) -> &'a [T]
 {    
     let shift_usize = (*shift)
@@ -77,7 +77,7 @@ pub fn g_roll_slice1<'a, T>(
 
 pub fn coll1_roll_replace_el<'a, C, T, V,>(
     slice: &mut [V],
-    shift: &i8,
+    shift: &i32,
     to_replace: V,
 ) -> C
 where 
@@ -109,7 +109,7 @@ where
                 .collect()
         }
         std::cmp::Ordering::Less => {
-            let num_need = (len as i8 + shift) as usize;
+            let num_need = (len as i32 + shift) as usize;
             iter_
                 .enumerate()
                 .map(|(i, v)| {
