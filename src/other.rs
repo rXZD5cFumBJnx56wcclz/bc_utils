@@ -42,10 +42,10 @@ pub fn rstrip(
 
 pub fn roll_slice1<T>(
     v: &mut [T],
-    shift: &i32,
+    shift: i32,
 )
 {    
-    let shift_usize = (*shift)
+    let shift_usize = shift
         .abs()
         .to_usize()
         .unwrap();
@@ -59,10 +59,10 @@ pub fn roll_slice1<T>(
 
 pub fn g_roll_slice1<'a, T>(
     v: &'a mut [T],
-    shift: &i32,
+    shift: i32,
 ) -> &'a [T]
 {    
-    let shift_usize = (*shift)
+    let shift_usize = shift
         .abs()
         .to_usize()
         .unwrap();
@@ -77,7 +77,7 @@ pub fn g_roll_slice1<'a, T>(
 
 pub fn coll1_roll_replace_el<'a, C, T, V,>(
     slice: &mut [V],
-    shift: &i32,
+    shift: i32,
     to_replace: V,
 ) -> C
 where 
@@ -89,7 +89,7 @@ where
     let len = slice.len();
     roll_slice1(slice, shift);
     let iter_ = slice.iter();
-    let shift_usize = (*shift)
+    let shift_usize = shift
         .abs()
         .to_usize()
         .unwrap();
