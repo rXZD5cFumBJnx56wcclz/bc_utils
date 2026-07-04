@@ -124,3 +124,10 @@ where
         std::cmp::Ordering::Equal => iter_.copied().collect()
     }
 }
+
+pub fn transpose<T>(mut value: Vec<Vec<T>>) -> Vec<Vec<T>>
+{
+    (0..value[0].len())
+        .map(|_| (&mut value).into_iter().map(|v| v.remove(0)).collect::<Vec<T>>())
+        .collect::<Vec<Vec<T>>>()
+}
