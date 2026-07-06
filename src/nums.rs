@@ -1,15 +1,9 @@
 use std::borrow::Borrow;
 
-use num_traits::{
-    Float, 
-    Num,
-};
+use num_traits::{Float, Num};
 
-
-pub fn avg<T, V>(
-    slice_: &[V],
-) -> T
-where 
+pub fn avg<T, V>(slice_: &[V]) -> T
+where
     T: Float,
     T: std::ops::AddAssign<T>,
     V: Borrow<T>,
@@ -24,11 +18,8 @@ where
     sum / T::from(count + 1).unwrap()
 }
 
-pub fn avg_with<T>(
-    v: &T,
-    slice_: &[T],
-) -> T 
-where 
+pub fn avg_with<T>(v: &T, slice_: &[T]) -> T
+where
     T: Float,
     T: std::ops::AddAssign<T>,
 {
@@ -42,40 +33,30 @@ where
     (sum + *v.borrow()) / T::from(count + 2).unwrap()
 }
 
-pub fn nz<T, V>(
-    num: V,
-    exc_value: V,
-) -> V
-where 
+pub fn nz<T, V>(num: V, exc_value: V) -> V
+where
     T: Float,
     V: Borrow<T>,
 {
-    if num.borrow().is_nan() { exc_value } else { num }
+    if num.borrow().is_nan() {
+        exc_value
+    } else {
+        num
+    }
 }
 
-pub fn coll_nz<C, T, V>(
-    slice: &[V],
-    exc_value: V,
-) -> C
-where 
+pub fn nz_coll<C, T, V>(slice: &[V], exc_value: V) -> C
+where
     T: Float,
     V: Borrow<T>,
     V: Copy,
-    C: FromIterator<V>
+    C: FromIterator<V>,
 {
-    slice
-        .iter()
-        .map(|num| nz(*num, exc_value))
-        .collect()
+    slice.iter().map(|num| nz(*num, exc_value)).collect()
 }
 
-pub fn normalize<'a, T, V>(
-    slice: &[V],
-    to_normalize: V,
-    min_new: &T,
-    max_new: &T,
-) -> T
-where 
+pub fn normalize<'a, T, V>(slice: &[V], to_normalize: V, min_new: &T, max_new: &T) -> T
+where
     T: 'a,
     T: Float,
     T: std::ops::Sub<Output = T>,
@@ -89,43 +70,46 @@ where
     let mut max_historic = -T::infinity();
 
     for num in slice {
-        min_historic = if num.borrow() < &min_historic {*num.borrow()} else {min_historic};
-        max_historic = if num.borrow() > &max_historic {*num.borrow()} else {max_historic};
-    };
-    (*to_normalize.borrow() - min_historic)
-        / (max_historic - min_historic)
-        * (*max_new - *min_new)
+        min_historic = if num.borrow() < &min_historic {
+            *num.borrow()
+        } else {
+            min_historic
+        };
+        max_historic = if num.borrow() > &max_historic {
+            *num.borrow()
+        } else {
+            max_historic
+        };
+    }
+    (*to_normalize.borrow() - min_historic) / (max_historic - min_historic) * (*max_new - *min_new)
         + *min_new
 }
 
-pub fn dz<T>(
-    num: T,
-) -> T 
-where 
+pub fn dz<T>(num: T) -> T
+where
     T: Float,
 {
-    if num == T::zero() { T::from(1e-10).unwrap() } else { num }
+    if num == T::zero() {
+        T::from(1e-10).unwrap()
+    } else {
+        num
+    }
 }
 
-pub fn coll_drop_nan<T, V, C>(
-    vec: &[V],
-) -> C
-where 
+pub fn coll_drop_nan<T, V, C>(vec: &[V]) -> C
+where
     T: Float,
     V: Borrow<T>,
     V: Copy,
     C: FromIterator<V>,
 {
-    vec
-        .iter()
+    vec.iter()
         .filter(|x| !(**x).borrow().is_nan())
         .copied()
         .collect()
 }
 
-pub fn abs<T, V>(
-    num: V,
-) -> T 
+pub fn abs<T, V>(num: V) -> T
 where
     T: Num,
     T: PartialOrd,
@@ -133,14 +117,15 @@ where
     T: Copy,
     V: Borrow<T>,
 {
-    if num.borrow() < &T::zero() { -*num.borrow() } else { *num.borrow() }
+    if num.borrow() < &T::zero() {
+        -*num.borrow()
+    } else {
+        *num.borrow()
+    }
 }
 
-pub fn round_f<T, V>(
-    num: V,
-    precision: &usize,
-) -> T
-where 
+pub fn round_f<T, V>(num: V, precision: &usize) -> T
+where
     T: Float,
     V: Borrow<T>,
     V: Copy,
@@ -149,15 +134,12 @@ where
     (*num.borrow() * mult).round() / mult
 }
 
-pub fn coll_comp<'a, C, T, V>(
-    slice: &'a[V],
-    func: fn(&T) -> bool,
-) -> C
-where 
+pub fn coll_comp<'a, C, T, V>(slice: &'a [V], func: fn(&T) -> bool) -> C
+where
     T: Float,
     T: 'a,
     V: Borrow<T>,
-    C: FromIterator<&'a T>
+    C: FromIterator<&'a T>,
 {
     slice
         .iter()
@@ -166,10 +148,8 @@ where
         .collect()
 }
 
-pub fn sign<T, V>(
-    num: V,
-) -> T
-where 
+pub fn sign<T, V>(num: V) -> T
+where
     T: Float,
     V: Borrow<T>,
 {

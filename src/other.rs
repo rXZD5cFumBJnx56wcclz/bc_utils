@@ -2,17 +2,10 @@ use std::borrow::Borrow;
 
 use num_traits::ToPrimitive;
 
-
-pub fn lstrip(
-    s: &'static str,
-    cut_before: char,
-) -> &'static str {
+pub fn lstrip(s: &'static str, cut_before: char) -> &'static str {
     let mut cut_index: usize = 0;
 
-    for c in s
-        .chars()
-        .enumerate() 
-    {
+    for c in s.chars().enumerate() {
         if c.1 == cut_before {
             cut_index = c.0;
             break;
@@ -21,17 +14,10 @@ pub fn lstrip(
     &s[cut_index..]
 }
 
-pub fn rstrip(
-    s: &'static str,
-    cut_before: char,
-) -> &'static str {
+pub fn rstrip(s: &'static str, cut_before: char) -> &'static str {
     let mut cut_index: usize = 0;
 
-    for c in s
-        .chars()
-        .rev()
-        .enumerate() 
-    {
+    for c in s.chars().rev().enumerate() {
         if c.1 == cut_before {
             cut_index = c.0;
             break;
@@ -40,16 +26,9 @@ pub fn rstrip(
     &s[..s.len() - cut_index]
 }
 
-pub fn roll_slice1<T>(
-    v: &mut [T],
-    shift: i32,
-)
-{    
-    let shift_usize = shift
-        .abs()
-        .to_usize()
-        .unwrap();
-    
+pub fn roll_slice1<T>(v: &mut [T], shift: i32) {
+    let shift_usize = shift.abs().to_usize().unwrap();
+
     match shift.cmp(&0) {
         std::cmp::Ordering::Greater => v.rotate_right(shift_usize),
         std::cmp::Ordering::Less => v.rotate_left(shift_usize),
@@ -57,16 +36,9 @@ pub fn roll_slice1<T>(
     }
 }
 
-pub fn g_roll_slice1<'a, T>(
-    v: &'a mut [T],
-    shift: i32,
-) -> &'a [T]
-{    
-    let shift_usize = shift
-        .abs()
-        .to_usize()
-        .unwrap();
-    
+pub fn g_roll_slice1<'a, T>(v: &'a mut [T], shift: i32) -> &'a [T] {
+    let shift_usize = shift.abs().to_usize().unwrap();
+
     match shift.cmp(&0) {
         std::cmp::Ordering::Greater => v.rotate_right(shift_usize),
         std::cmp::Ordering::Less => v.rotate_left(shift_usize),
@@ -75,12 +47,8 @@ pub fn g_roll_slice1<'a, T>(
     v
 }
 
-pub fn coll1_roll_replace_el<'a, C, T, V,>(
-    slice: &mut [V],
-    shift: i32,
-    to_replace: V,
-) -> C
-where 
+pub fn coll1_roll_replace_el<'a, C, T, V>(slice: &mut [V], shift: i32, to_replace: V) -> C
+where
     T: 'a,
     V: Borrow<T>,
     V: Copy,
@@ -89,45 +57,34 @@ where
     let len = slice.len();
     roll_slice1(slice, shift);
     let iter_ = slice.iter();
-    let shift_usize = shift
-        .abs()
-        .to_usize()
-        .unwrap();
+    let shift_usize = shift.abs().to_usize().unwrap();
 
-    match shift.cmp(&0){
+    match shift.cmp(&0) {
         std::cmp::Ordering::Greater => {
             let num_need = shift_usize - 1;
             iter_
                 .enumerate()
-                .map(|(i, v)| {
-                    if i <= num_need {
-                        to_replace
-                    } else {
-                        *v
-                    }
-                })
+                .map(|(i, v)| if i <= num_need { to_replace } else { *v })
                 .collect()
         }
         std::cmp::Ordering::Less => {
             let num_need = (len as i32 + shift) as usize;
             iter_
                 .enumerate()
-                .map(|(i, v)| {
-                    if i >= num_need {
-                        to_replace
-                    } else {
-                        *v
-                    }
-                })
+                .map(|(i, v)| if i >= num_need { to_replace } else { *v })
                 .collect()
         }
-        std::cmp::Ordering::Equal => iter_.copied().collect()
+        std::cmp::Ordering::Equal => iter_.copied().collect(),
     }
 }
 
-pub fn transpose<T>(mut value: Vec<Vec<T>>) -> Vec<Vec<T>>
-{
+pub fn transpose<T>(mut value: Vec<Vec<T>>) -> Vec<Vec<T>> {
     (0..value[0].len())
-        .map(|_| (&mut value).into_iter().map(|v| v.remove(0)).collect::<Vec<T>>())
+        .map(|_| {
+            (&mut value)
+                .into_iter()
+                .map(|v| v.remove(0))
+                .collect::<Vec<T>>()
+        })
         .collect::<Vec<Vec<T>>>()
 }
