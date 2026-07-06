@@ -79,7 +79,7 @@ where
 }
 
 pub fn transpose<T>(mut value: Vec<Vec<T>>) -> Vec<Vec<T>> {
-    (0..value[0].len())
+    (0..value.first().unwrap_or(&vec![]).len())
         .map(|_| {
             (&mut value)
                 .into_iter()
