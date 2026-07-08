@@ -18,7 +18,10 @@ where
     sum / T::from(count + 1).unwrap()
 }
 
-pub fn avg_with<T>(v: &T, slice_: &[T]) -> T
+pub fn avg_with<T>(
+    v: &T,
+    slice_: &[T],
+) -> T
 where
     T: Float,
     T: std::ops::AddAssign<T>,
@@ -33,7 +36,10 @@ where
     (sum + *v.borrow()) / T::from(count + 2).unwrap()
 }
 
-pub fn nz<T, V>(num: V, exc_value: V) -> V
+pub fn nz<T, V>(
+    num: V,
+    exc_value: V,
+) -> V
 where
     T: Float,
     V: Borrow<T>,
@@ -45,7 +51,10 @@ where
     }
 }
 
-pub fn nz_coll<C, T, V>(slice: &[V], exc_value: V) -> C
+pub fn nz_coll<C, T, V>(
+    slice: &[V],
+    exc_value: V,
+) -> C
 where
     T: Float,
     V: Borrow<T>,
@@ -55,7 +64,12 @@ where
     slice.iter().map(|num| nz(*num, exc_value)).collect()
 }
 
-pub fn normalize<'a, T, V>(slice: &[V], to_normalize: V, min_new: &T, max_new: &T) -> T
+pub fn normalize<'a, T, V>(
+    slice: &[V],
+    to_normalize: V,
+    min_new: &T,
+    max_new: &T,
+) -> T
 where
     T: 'a,
     T: Float,
@@ -124,7 +138,10 @@ where
     }
 }
 
-pub fn round_f<T, V>(num: V, precision: &usize) -> T
+pub fn round_f<T, V>(
+    num: V,
+    precision: &usize,
+) -> T
 where
     T: Float,
     V: Borrow<T>,
@@ -134,7 +151,10 @@ where
     (*num.borrow() * mult).round() / mult
 }
 
-pub fn coll_comp<'a, C, T, V>(slice: &'a [V], func: fn(&T) -> bool) -> C
+pub fn coll_comp<'a, C, T, V>(
+    slice: &'a [V],
+    func: fn(&T) -> bool,
+) -> C
 where
     T: Float,
     T: 'a,
@@ -161,5 +181,183 @@ where
         -T::one()
     } else {
         T::zero()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use pretty_assertions::assert_eq as assert_eq_pr;
+
+    #[test]
+    fn avg_res_1() {
+        assert_eq_pr!(avg(&[1.0, 2.0, 3.0]), 2.0,)
+    }
+
+    #[test]
+    fn avg_link_1() {
+        assert_eq_pr!(avg::<f64, &f64>(&[&1.0, &2.0, &3.0]), 2.0)
+    }
+
+    #[test]
+    fn avg_with_res_1() {
+        assert_eq_pr!(avg_with(&1.0, &[2.0, 3.0]), 2.0,)
+    }
+
+    #[test]
+    fn avg_with_link_1() {
+        assert_eq_pr!(avg_with::<f64>(&1.0, &[2.0, 3.0]), 2.0)
+    }
+
+    #[test]
+    fn nz_res_1() {
+        assert_eq_pr!(nz(f64::NAN, 0.0), 0.0,)
+    }
+
+    #[test]
+    fn nz_link_1() {
+        assert_eq_pr!(nz::<f64, &f64>(&f64::NAN, &0.0), &0.0,)
+    }
+
+    #[test]
+    fn nz_coll_res_1() {
+        assert_eq_pr!(
+            nz_coll::<Vec<f64>, _, _>(&[1.0, f64::NAN,], 2.0),
+            vec![1.0, 2.0],
+        )
+    }
+
+    #[test]
+    fn nz_coll_link_1() {
+        assert_eq_pr!(
+            nz_coll::<Vec<&f64>, f64, &f64>(&[&1.0, &f64::NAN,], &2.0),
+            vec![&1.0, &2.0],
+        )
+    }
+
+    #[test]
+    fn normalize_res_1() {
+        assert_eq_pr!(normalize(&[-10.0, -20.0,], -10.0, &0.0, &1.0,), 1.0,)
+    }
+
+    #[test]
+    fn normalize_link_1() {
+        assert_eq_pr!(normalize(&[&-10.0, &-20.0,], &-10.0, &0.0, &1.0,), 1.0,)
+    }
+
+    #[test]
+    fn dz_res_1() {
+        assert_eq_pr!(dz(0.0), 1e-10,)
+    }
+
+    #[test]
+    fn coll_dropnan_res_1() {
+        assert_eq_pr!(
+            coll_drop_nan::<f64, _, Vec<f64>>(&[1.0, 2.0, f64::NAN]),
+            vec![1.0, 2.0]
+        );
+    }
+
+    #[test]
+    fn coll_dropnan_link_1() {
+        assert_eq_pr!(
+            coll_drop_nan::<f64, _, Vec<&f64>>(&[&1.0, &2.0, &f64::NAN]),
+            vec![&1.0, &2.0]
+        );
+    }
+
+    #[test]
+    fn abs_res_1() {
+        assert_eq_pr!(abs(-1), 1)
+    }
+
+    #[test]
+    fn abs_res_2() {
+        assert_eq_pr!(abs(-1.0), 1.0)
+    }
+
+    #[test]
+    fn abs_link_1() {
+        assert_eq_pr!(abs::<i8, _>(&-1), 1)
+    }
+
+    #[test]
+    fn abs_link_2() {
+        assert_eq_pr!(abs::<f64, _>(&-1.0), 1.0)
+    }
+
+    #[test]
+    fn round_f_res_1() {
+        assert_eq_pr!(1.123, round_f(1.123456, &3),)
+    }
+
+    #[test]
+    #[allow(clippy::needless_borrows_for_generic_args)]
+    fn round_f_link_1() {
+        assert_eq_pr!(1.123, round_f(&1.123456, &3),)
+    }
+
+    #[test]
+    fn coll_comp_res_1() {
+        assert_eq_pr!(
+            coll_comp::<Vec<&f64>, _, _>(&[1.0, -1.0, 0.0], |v| *v > 0.0),
+            vec![&1.0,]
+        )
+    }
+
+    #[test]
+    fn coll_comp_res_2() {
+        assert_eq_pr!(
+            coll_comp::<Vec<&f64>, _, _>(&[1.0, -1.0, 0.0], |v| *v < 0.0),
+            vec![&-1.0,]
+        )
+    }
+
+    #[test]
+    fn coll_comp_res_3() {
+        assert_eq_pr!(
+            coll_comp::<Vec<&f64>, _, _>(&[1.0, -1.0, 0.0], |v| *v == 0.0),
+            vec![&0.0,]
+        )
+    }
+
+    #[test]
+    fn coll_comp_link_1() {
+        assert_eq_pr!(
+            coll_comp::<Vec<&f64>, _, _>(&[&1.0, &-1.0, &0.0], |v| *v > 0.0),
+            vec![&1.0,]
+        )
+    }
+
+    #[test]
+    fn coll_comp_link_2() {
+        assert_eq_pr!(
+            coll_comp::<Vec<&f64>, _, _>(&[&1.0, &-1.0, &0.0], |v| *v < 0.0),
+            vec![&-1.0,]
+        )
+    }
+
+    #[test]
+    fn coll_comp_link_3() {
+        assert_eq_pr!(
+            coll_comp::<Vec<&f64>, _, _>(&[&1.0, &-1.0, &0.0], |v| *v == 0.0),
+            vec![&0.0,]
+        )
+    }
+
+    #[test]
+    fn sign_res_1() {
+        assert_eq_pr!(1.0, sign(5.0),);
+    }
+
+    #[test]
+    fn sign_res_2() {
+        assert_eq_pr!(-1.0, sign(-5.0),);
+    }
+
+    #[test]
+    fn sign_res_3() {
+        assert_eq_pr!(0.0, sign(0.0),);
     }
 }
