@@ -117,6 +117,14 @@ pub fn transpose<T>(mut value: Vec<Vec<T>>) -> Vec<Vec<T>> {
         .collect::<Vec<Vec<T>>>()
 }
 
+pub fn transpose_set<T>(value: &mut Vec<Vec<T>>) {
+    let mut vec = vec![];
+    for _ in 0..value.first().unwrap_or(&vec![]).len() {
+        vec.push(value.iter_mut().map(|v| v.remove(0)).collect::<Vec<T>>());
+    }
+    *value = vec;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -218,5 +226,11 @@ mod tests {
             transpose(vec![vec![1, 2, 3], vec![1, 2, 3],]),
             vec![vec![1, 1,], vec![2, 2,], vec![3, 3,]]
         )
+    }
+    #[test]
+    fn transpose_set_res_1() {
+        let mut vec = vec![vec![1, 2, 3], vec![1, 2, 3]];
+        transpose_set(&mut vec);
+        assert_eq_pr!(vec, vec![vec![1, 1,], vec![2, 2,], vec![3, 3,]])
     }
 }
