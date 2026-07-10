@@ -1,5 +1,6 @@
-use std::borrow::Borrow;
+use std::{borrow::Borrow, hash::Hash};
 
+use bc_utils_lg::types::maps::{MAP, MapTrait};
 use num_traits::ToPrimitive;
 
 pub fn lstrip(
@@ -125,6 +126,55 @@ pub fn transpose_set<T>(value: &mut Vec<Vec<T>>) {
     *value = vec;
 }
 
+pub fn transpose_map_from_vec<'a, K, T>(value: &Vec<MAP<K, T>>) -> MAP<K, Vec<T>>
+where
+    K: 'a + Eq + Hash,
+    K: Clone,
+    T: 'a,
+    T: Clone,
+{
+    value
+        .first()
+        .unwrap_or(&MAP::default())
+        .keys()
+        .map(|k| {
+            (
+                k.clone(),
+                value
+                    .iter()
+                    .cloned()
+                    .map(|v2| v2.get(k).unwrap().clone())
+                    .collect(),
+            )
+        })
+        .collect()
+}
+
+pub fn vec_len_sync<T: Clone>(mut src: Vec<Vec<T>>) -> Vec<Vec<T>> {
+    let min_len = src
+        .iter()
+        .map(|v| v.len())
+        .min()
+        .expect("this is nan or wtf");
+    src = src
+        .into_iter()
+        .map(|v| v[v.len() - min_len..].to_vec())
+        .collect::<Vec<Vec<T>>>();
+    src
+}
+
+pub fn vec_len_sync_set<T: Clone>(src: &mut Vec<Vec<T>>) {
+    let min_len = src
+        .iter()
+        .map(|v| v.len())
+        .min()
+        .expect("this is nan or wtf");
+    *src = src
+        .into_iter()
+        .map(|v| v[v.len() - min_len..].to_vec())
+        .collect::<Vec<Vec<T>>>();
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -232,5 +282,31 @@ mod tests {
         let mut vec = vec![vec![1, 2, 3], vec![1, 2, 3]];
         transpose_set(&mut vec);
         assert_eq_pr!(vec, vec![vec![1, 1,], vec![2, 2,], vec![3, 3,]])
+    }
+
+    #[test]
+    fn transpose_map_from_vec_res_1() {
+        assert_eq_pr!(
+            transpose_map_from_vec(&vec![
+                MAP::from_iter([("iter", 1)]),
+                MAP::from_iter([("iter", 2)]),
+            ]),
+            MAP::from_iter([("iter", vec![1, 2])])
+        );
+    }
+
+    #[test]
+    fn vec_len_sync_res_1() {
+        assert_eq!(
+            vec_len_sync(vec![vec![1, 2, 3], vec![1, 2, 3], vec![1, 2]]),
+            vec![vec![2, 3], vec![2, 3], vec![1, 2]]
+        )
+    }
+
+    #[test]
+    fn vec_len_sync_set_res_1() {
+        let mut bind = vec![vec![1, 2, 3], vec![1, 2, 3], vec![1, 2]];
+        vec_len_sync_set(&mut bind);
+        assert_eq!(bind, vec![vec![2, 3], vec![2, 3], vec![1, 2]])
     }
 }
