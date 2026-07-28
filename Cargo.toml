@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 num-traits = "^0.2.19"
-bc_utils_lg = {path = "../bc_utils_lg"}
+bc_utils_lg ={ git = "https://github.com/rXZD5cFumBJnx56wcclz/bc_utils_lg.git", branch = "main"}
 
 [dev-dependencies]
 pretty_assertions = "1"

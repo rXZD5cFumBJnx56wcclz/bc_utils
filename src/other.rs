@@ -1,12 +1,9 @@
 use std::{borrow::Borrow, hash::Hash};
 
-use bc_utils_lg::types::maps::{MAP, MapTrait};
+use bc_utils_lg::types::maps::MAP;
 use num_traits::ToPrimitive;
 
-pub fn lstrip(
-    s: &'static str,
-    cut_before: char,
-) -> &'static str {
+pub fn lstrip(s: &'static str, cut_before: char) -> &'static str {
     let mut cut_index: usize = 0;
 
     for c in s.chars().enumerate() {
@@ -18,10 +15,7 @@ pub fn lstrip(
     &s[cut_index..]
 }
 
-pub fn rstrip(
-    s: &'static str,
-    cut_before: char,
-) -> &'static str {
+pub fn rstrip(s: &'static str, cut_before: char) -> &'static str {
     let mut cut_index: usize = 0;
 
     for c in s.chars().rev().enumerate() {
@@ -33,10 +27,7 @@ pub fn rstrip(
     &s[..s.len() - cut_index]
 }
 
-pub fn roll_slice1<T>(
-    v: &mut [T],
-    shift: i32,
-) {
+pub fn roll_slice1<T>(v: &mut [T], shift: i32) {
     let shift_usize = shift.abs().to_usize().unwrap();
 
     match shift.cmp(&0) {
@@ -46,10 +37,7 @@ pub fn roll_slice1<T>(
     }
 }
 
-pub fn g_roll_slice1<'a, T>(
-    v: &'a mut [T],
-    shift: i32,
-) -> &'a [T] {
+pub fn g_roll_slice1<'a, T>(v: &'a mut [T], shift: i32) -> &'a [T] {
     let shift_usize = shift.abs().to_usize().unwrap();
 
     match shift.cmp(&0) {
@@ -60,11 +48,7 @@ pub fn g_roll_slice1<'a, T>(
     v
 }
 
-pub fn coll1_roll_replace_el<'a, C, T, V>(
-    slice: &mut [V],
-    shift: i32,
-    to_replace: V,
-) -> C
+pub fn coll1_roll_replace_el<'a, C, T, V>(slice: &mut [V], shift: i32, to_replace: V) -> C
 where
     T: 'a,
     V: Borrow<T>,
@@ -81,26 +65,14 @@ where
             let num_need = shift_usize - 1;
             iter_
                 .enumerate()
-                .map(|(i, v)| {
-                    if i <= num_need {
-                        to_replace
-                    } else {
-                        *v
-                    }
-                })
+                .map(|(i, v)| if i <= num_need { to_replace } else { *v })
                 .collect()
         }
         std::cmp::Ordering::Less => {
             let num_need = (len as i32 + shift) as usize;
             iter_
                 .enumerate()
-                .map(|(i, v)| {
-                    if i >= num_need {
-                        to_replace
-                    } else {
-                        *v
-                    }
-                })
+                .map(|(i, v)| if i >= num_need { to_replace } else { *v })
                 .collect()
         }
         std::cmp::Ordering::Equal => iter_.copied().collect(),
@@ -173,6 +145,18 @@ pub fn vec_len_sync_set<T: Clone>(src: &mut Vec<Vec<T>>) {
         .into_iter()
         .map(|v| v[v.len() - min_len..].to_vec())
         .collect::<Vec<Vec<T>>>();
+}
+
+pub fn procedure_used<T>(mut res: Vec<T>, procedure: &[usize]) -> Vec<T> {
+    let mut bind = res.into_iter().enumerate().collect::<Vec<(usize, T)>>();
+    res = procedure
+        .iter()
+        .map(|i| {
+            bind.remove(bind.iter().enumerate().find(|v| v.1.0 == *i).unwrap().0)
+                .1
+        })
+        .collect();
+    res
 }
 
 #[cfg(test)]
@@ -293,6 +277,11 @@ mod tests {
             ]),
             MAP::from_iter([("iter", vec![1, 2])])
         );
+    }
+
+    #[test]
+    fn procedure_used_res_1() {
+        assert_eq_pr!(procedure_used(vec![0, 1, 2], &[1, 0, 2]), vec![1, 0, 2]);
     }
 
     #[test]

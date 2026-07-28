@@ -18,10 +18,7 @@ where
     sum / T::from(count + 1).unwrap()
 }
 
-pub fn avg_with<T>(
-    v: &T,
-    slice_: &[T],
-) -> T
+pub fn avg_with<T>(v: &T, slice_: &[T]) -> T
 where
     T: Float,
     T: std::ops::AddAssign<T>,
@@ -36,10 +33,7 @@ where
     (sum + *v.borrow()) / T::from(count + 2).unwrap()
 }
 
-pub fn nz<T, V>(
-    num: V,
-    exc_value: V,
-) -> V
+pub fn nz<T, V>(num: V, exc_value: V) -> V
 where
     T: Float,
     V: Borrow<T>,
@@ -51,10 +45,7 @@ where
     }
 }
 
-pub fn nz_coll<C, T, V>(
-    slice: &[V],
-    exc_value: V,
-) -> C
+pub fn nz_coll<C, T, V>(slice: &[V], exc_value: V) -> C
 where
     T: Float,
     V: Borrow<T>,
@@ -64,12 +55,7 @@ where
     slice.iter().map(|num| nz(*num, exc_value)).collect()
 }
 
-pub fn normalize<'a, T, V>(
-    slice: &[V],
-    to_normalize: V,
-    min_new: &T,
-    max_new: &T,
-) -> T
+pub fn normalize<'a, T, V>(slice: &[V], to_normalize: V, min_new: &T, max_new: &T) -> T
 where
     T: 'a,
     T: Float,
@@ -138,10 +124,7 @@ where
     }
 }
 
-pub fn round_f<T, V>(
-    num: V,
-    precision: &usize,
-) -> T
+pub fn round_f<T, V>(num: V, precision: &usize) -> T
 where
     T: Float,
     V: Borrow<T>,
@@ -151,10 +134,7 @@ where
     (*num.borrow() * mult).round() / mult
 }
 
-pub fn coll_comp<'a, C, T, V>(
-    slice: &'a [V],
-    func: fn(&T) -> bool,
-) -> C
+pub fn coll_comp<'a, C, T, V>(slice: &'a [V], func: fn(&T) -> bool) -> C
 where
     T: Float,
     T: 'a,
