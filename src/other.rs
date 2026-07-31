@@ -37,6 +37,11 @@ pub fn roll_slice1<T>(v: &mut [T], shift: i32) {
     }
 }
 
+pub fn roll_slice1_replace<T>(v: &mut [T], shift: i32, replace: T) {
+    roll_slice1(v, shift);
+    v[v.len() - 1] = replace;
+}
+
 pub fn g_roll_slice1<'a, T>(v: &'a mut [T], shift: i32) -> &'a [T] {
     let shift_usize = shift.abs().to_usize().unwrap();
 
@@ -190,6 +195,13 @@ mod tests {
         let v = &mut [&1, &2, &3];
         roll_slice1(v, -1);
         assert_eq_pr!(v, &[&2, &3, &1]);
+    }
+
+    #[test]
+    fn roll_slice1_replace_res_1() {
+        let mut v = vec![1, 2, 3];
+        roll_slice1_replace(&mut v, -1, 4);
+        assert_eq_pr!(v, vec![2, 3, 4]);
     }
 
     #[test]

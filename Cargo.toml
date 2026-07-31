@@ -1,11 +1,11 @@
 [package]
 name = "bc_utils"
-version = "0.1.21"
+version = "0.2.0"
 edition = "2024"
 
 [dependencies]
 num-traits = "^0.2.19"
-bc_utils_lg ={ git = "https://github.com/rXZD5cFumBJnx56wcclz/bc_utils_lg.git", branch = "main"}
+bc_utils_lg = {path = "../bc_utils_lg"}
 
 [dev-dependencies]
 pretty_assertions = "1"
