@@ -1,6 +1,6 @@
-use std::{borrow::Borrow, hash::Hash};
+use std::{borrow::Borrow, collections::hash_map::Entry, hash::Hash};
 
-use bc_utils_lg::types::maps::MAP;
+use bc_utils_lg::types::maps::{MAP, MAP_LINK};
 use num_traits::ToPrimitive;
 
 pub fn lstrip(s: &'static str, cut_before: char) -> &'static str {
@@ -103,28 +103,43 @@ pub fn transpose_set<T>(value: &mut Vec<Vec<T>>) {
     *value = vec;
 }
 
-pub fn transpose_map_from_vec<'a, K, T>(value: &Vec<MAP<K, T>>) -> MAP<K, Vec<T>>
+pub fn transpose_map_from_vec<K, T>(mut value: Vec<MAP<K, T>>) -> MAP<K, Vec<T>>
 where
-    K: 'a + Eq + Hash,
-    K: Clone,
-    T: 'a,
-    T: Clone,
+    K: Eq + Hash,
 {
-    value
-        .first()
-        .unwrap_or(&MAP::default())
-        .keys()
-        .map(|k| {
-            (
-                k.clone(),
-                value
-                    .iter()
-                    .cloned()
-                    .map(|v2| v2.get(k).unwrap().clone())
-                    .collect(),
-            )
-        })
-        .collect()
+    let mut res = MAP::default();
+    for _ in 0..value.len() {
+        for (k, v) in value.remove(0) {
+            match res.entry(k) {
+                Entry::Vacant(entry) => {
+                    let mut bind = Vec::with_capacity(value.len());
+                    bind.push(v);
+                    entry.insert_entry(bind);
+                }
+                Entry::Occupied(mut entry) => {
+                    entry.get_mut().push(v);
+                }
+            }
+        }
+    }
+    res
+}
+
+pub fn transpose_vec_from_map<K, T>(mut value: MAP<K, Vec<T>>) -> Vec<MAP<K, T>>
+where
+    K: Eq + Hash + Clone,
+{
+    let len = value.values().next().map(|v| v.len()).unwrap_or_default();
+    let mut res = Vec::with_capacity(len);
+    for _ in 0..len {
+        res.push(
+            value
+                .iter_mut()
+                .map(|v| (v.0.clone(), v.1.remove(0)))
+                .collect::<MAP<_, _>>(),
+        )
+    }
+    res
 }
 
 pub fn vec_len_sync<T: Clone>(mut src: Vec<Vec<T>>) -> Vec<Vec<T>> {
@@ -152,7 +167,10 @@ pub fn vec_len_sync_set<T: Clone>(src: &mut Vec<Vec<T>>) {
         .collect::<Vec<Vec<T>>>();
 }
 
-pub fn procedure_used<T>(mut res: Vec<T>, procedure: &[usize]) -> Vec<T> {
+pub fn used_procedure<C: IntoIterator<Item = T> + FromIterator<T>, T>(
+    mut res: C,
+    procedure: &[usize],
+) -> C {
     let mut bind = res.into_iter().enumerate().collect::<Vec<(usize, T)>>();
     res = procedure
         .iter()
@@ -164,10 +182,14 @@ pub fn procedure_used<T>(mut res: Vec<T>, procedure: &[usize]) -> Vec<T> {
     res
 }
 
+pub fn map_to_vec<K, T>(v: MAP_LINK<K, Vec<T>>) -> Vec<Vec<T>> {
+    v.into_values().collect()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pretty_assertions::assert_eq as assert_eq_pr;
+    use bc_test_kit::prelude::*;
 
     #[test]
     fn roll_slice_res_1() {
@@ -283,7 +305,7 @@ mod tests {
     #[test]
     fn transpose_map_from_vec_res_1() {
         assert_eq_pr!(
-            transpose_map_from_vec(&vec![
+            transpose_map_from_vec(vec![
                 MAP::from_iter([("iter", 1)]),
                 MAP::from_iter([("iter", 2)]),
             ]),
@@ -292,8 +314,19 @@ mod tests {
     }
 
     #[test]
-    fn procedure_used_res_1() {
-        assert_eq_pr!(procedure_used(vec![0, 1, 2], &[1, 0, 2]), vec![1, 0, 2]);
+    fn transpose_vec_from_map_res_1() {
+        assert_eq_pr!(
+            transpose_vec_from_map(MAP::from_iter([("klines1", vec![1, 2]),])),
+            vec![
+                MAP::from_iter([("klines1", 1)]),
+                MAP::from_iter([("klines1", 2)])
+            ]
+        );
+    }
+
+    #[test]
+    fn used_procedure_res_1() {
+        assert_eq_pr!(used_procedure(vec![0, 1, 2], &[1, 0, 2]), vec![1, 0, 2]);
     }
 
     #[test]
@@ -309,5 +342,16 @@ mod tests {
         let mut bind = vec![vec![1, 2, 3], vec![1, 2, 3], vec![1, 2]];
         vec_len_sync_set(&mut bind);
         assert_eq!(bind, vec![vec![2, 3], vec![2, 3], vec![1, 2]])
+    }
+
+    #[test]
+    fn map_to_vec_res_1() {
+        assert_eq_pr!(
+            map_to_vec(MAP_LINK::from_iter([
+                ("vec1".to_string(), vec![1]),
+                ("vec2".to_string(), vec![2])
+            ])),
+            vec![vec![1], vec![2],]
+        );
     }
 }

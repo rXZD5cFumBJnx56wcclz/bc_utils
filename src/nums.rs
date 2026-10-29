@@ -167,8 +167,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use pretty_assertions::assert_eq as assert_eq_pr;
+    use bc_test_kit::prelude::*;
 
     #[test]
     fn avg_res_1() {
@@ -275,7 +274,7 @@ mod tests {
     #[test]
     #[allow(clippy::needless_borrows_for_generic_args)]
     fn round_f_link_1() {
-        assert_eq_pr!(1.123, round_f(&1.123456, &3),)
+        assert_eq_pr!(1.123, round_f::<f64, _>(&1.123456, &3),)
     }
 
     #[test]
